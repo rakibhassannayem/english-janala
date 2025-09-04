@@ -4,18 +4,29 @@ const loadLessons = () => {
     .then((json) => displayLevels(json.data));
 };
 
+const removeActive = () => {
+  const lessonButtons = document.querySelectorAll(".lesson-btn");
+  lessonButtons.forEach(btn=> btn.classList.remove("btn-active"))
+};
+
 const loadLevelWord = (id) => {
   const url = `https://openapi.programming-hero.com/api/level/${id}`;
   fetch(url)
     .then((res) => res.json())
-    .then((data) => displayLevelWords(data.data));
+    .then((data) => {
+      removeActive();
+      const clickedBtn = document.getElementById(`lesson-btn-${id}`);
+      clickedBtn.classList.add("btn-active");
+      displayLevelWords(data.data);
+    });
+};
 
-  const displayLevelWords = (words) => {
-    const wordContainer = document.getElementById("word-container");
-    wordContainer.innerHTML = "";
+const displayLevelWords = (words) => {
+  const wordContainer = document.getElementById("word-container");
+  wordContainer.innerHTML = "";
 
-    if (words.length == 0) {
-      wordContainer.innerHTML = `
+  if (words.length == 0) {
+    wordContainer.innerHTML = `
         <div class="col-span-full flex flex-col items-center justify-center p-5">
         <img class="w-20" src='./assets/alert-error.png'>
           <p class="font-bangla text-gray-500 text-lg">
@@ -24,18 +35,18 @@ const loadLevelWord = (id) => {
           <h1 class="font-bangla font-bold text-3xl">নেক্সট Lesson এ যান</h1>
         </div>
         `;
-    }
-    words.forEach((word) => {
-      const card = document.createElement("div");
-
-      card.innerHTML = `
+  }
+  words.forEach((word) => {
+    const card = document.createElement("div");
+    card.innerHTML = `
         <div class="card bg-white space-y-3 p-4 shadow-sm">
             <span class="text-2xl font-semibold">${word.word}</span>
-            <p>Meaning /Pronounciation</p>
+            <p>Meaning / Pronounciation</p>
             <span class="font-bangla text-gray-900 text-2xl font-semibold">"${
               word.meaning ? word.meaning : "অর্থ পাওয়া যায়নি"
-            } / ${word.pronunciation ? word.pronunciation : "উচ্চারন পাওয়া যায়নি"}"</span>
-  
+            } / ${
+      word.pronunciation ? word.pronunciation : "উচ্চারন পাওয়া যায়নি"
+    }"</span>
             <div class="flex justify-between">
               <button class="bg-blue-100 p-2 rounded-lg cursor-pointer">
                 <i class="fa-solid fa-circle-info"></i>
@@ -46,9 +57,8 @@ const loadLevelWord = (id) => {
             </div>
           </div>
         `;
-      wordContainer.append(card);
-    });
-  };
+    wordContainer.append(card);
+  });
 };
 
 const displayLevels = (lessons) => {
@@ -57,9 +67,11 @@ const displayLevels = (lessons) => {
   for (const lesson of lessons) {
     const btnDiv = document.createElement("div");
     btnDiv.innerHTML = `
-      <button onclick="loadLevelWord(${lesson.level_no})" class="btn btn-outline btn-primary">
+      <button id="lesson-btn-${lesson.level_no}"
+      onclick="loadLevelWord(${lesson.level_no})"
+      class="btn btn-outline btn-primary lesson-btn">
           <i class="fa-solid fa-book-open"></i>Lesson ${lesson.level_no}
-        </button>
+      </button>
       `;
     levelContainer.append(btnDiv);
   }
